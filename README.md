@@ -66,3 +66,35 @@ Further parameters (see [stationboard](https://transport.opendata.ch/docs.html#s
 - date: Date of departing connections, in the format YYYY-MM-DD
 - time: Time of departing connections, in the format hh:mm
 - type: departure (default) or arrival
+
+# Objects
+## Connection
+A connection represents a possible journey between two locations.
+### Parameters:
+| Name     | Type     | Description                       |
+| ---------|:--------:| ---------------------------------:|
+| start    | Stop     | The starting point of the journey |
+| end      | Stop     | The end point of the journey      |
+| duration | Duration | How long the journey takes        |
+
+## Stop
+A stop represents an arrival or a departure point (in time and space) of a connection.
+### Parameters:
+| Name      | Type     | Description                                                          |
+| ----------|:--------:| --------------------------------------------------------------------:|
+| station   | Location | A location object showing this line's stop at the requested station. |
+| arrival   | Time     | The arrival time to the checkpoint                                   |
+| departure | Time     | The departure time from the checkpoint                               |
+| delay     | int      | The delay of this connection.                                        |
+| platform  | str      | The arrival/departure platform                                       |
+
+## Location
+Can be any location, station address or point of iterest.
+### Parameters:
+| Name        | Type        | Description                                                          |
+| ------------|:-----------:| --------------------------------------------------------------------:|
+| id          | int         | The id of the location                                               |
+| name        | str         | The name of the location.                                            |
+| score       | Time        | The accuracy of the result                                           |
+| distance    | int         | If search has been with coordinates, distance to original point in meters|
+| coordinates | Coordinates | The location coordinates                                       |

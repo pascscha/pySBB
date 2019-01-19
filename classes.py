@@ -1,15 +1,6 @@
 import datetime
 
 
-class Result:
-    def __init__(self, response):
-        self.url = response.url
-        json = response.json()
-        self.connections = []
-        for conn in json["connections"]:
-            self.connections.append(Connection(conn))
-
-
 class Connection:
     def __init__(self, json):
         if "from" in json and json["from"] is not None:
@@ -143,7 +134,7 @@ class Location:
         else:
             self.score = None
         if "distance" in json:
-            self.distance = json["distance"]
+            self.distance = int(json["distance"])
         else:
             self.distance = None
         if "coordinate" in json and json["coordinate"] is not None:
