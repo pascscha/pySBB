@@ -17,7 +17,7 @@ connections = sbpy.get_connections("Zürich", "Bern")
 for c in connections:
 	print(c)
 ```
-Further parameters (see https://transport.opendata.ch/docs.html#connections) for more info:
+Further parameters (see [connections](https://transport.opendata.ch/docs.html#connections)) for more info:
 - via: Specifies up to five via locations.
 - date: Date of the connection, in the format YYYY-MM-DD
 - time: Time of the connection, in the format hh:mm
@@ -40,15 +40,15 @@ locations = sbpy.get_locations(query="Lidostrasse 5 Luzern")
 for l in locations:
     print(l)
 ```
-Further parameters (see https://transport.opendata.ch/docs.html#locations) for more info:
+Further parameters (see [locations](https://transport.opendata.ch/docs.html#locations) for more info:
 - query: Specifies the location name to search for
 - x: Latitude
 - y: Longitude
 - type: Only with query parameter. Specifies the location type, possible types are:
-	all (default): Looks up for all types of locations
-	station: Looks up for stations (train station, bus station)
-	poi: Looks up for points of interest (Clock tower, China garden)
-	address: Looks up for an address (Zurich Bahnhofstrasse 33)
+	* all (default): Looks up for all types of locations
+	* station: Looks up for stations (train station, bus station)
+	* poi: Looks up for points of interest (Clock tower, China garden)
+	* address: Looks up for an address (Zurich Bahnhofstrasse 33)
 
 ## Get Stationboards
 Stationboards are the big blue boards that can be seen at trainstations. These are also available via the api.
@@ -59,7 +59,7 @@ entries = sbpy.get_stationboard("Lugano")
 for e in entries:
     print(e)
 ```
-Further parameters (see https://transport.opendata.ch/docs.html#stationboard) for more info:
+Further parameters (see [stationboard](https://transport.opendata.ch/docs.html#stationboard)) for more info:
 - id: The id of the station whose stationboard should be returned. Overwrites to the station parameter.
 - limit: Number of departing connections to return. 
 - transportations: Transportation means; one or more of train, tram, ship, bus, cableway
