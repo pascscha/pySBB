@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pySBB",
-    version="0.0.1",
+    version="1.0.0",
     author="Pascal Schärli",
     author_email="pas.schaerli@sunrise.ch",
     description="An unofficial python wrapper for the SBB api.",
