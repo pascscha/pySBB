@@ -1,6 +1,6 @@
 import datetime
 
-
+# Author: Pascal Schärli
 class Connection:
     def __init__(self, json):
         if "from" in json and json["from"] is not None:
@@ -87,10 +87,10 @@ class Time:
         date = datetime.datetime.now()
         if self.year == date.year:
             if self.month == date.month and self.day == date.day:
-                return "{}:{}".format(self.hour, self.minute)
+                return "{:02d}:{:02d}".format(self.hour, self.minute)
             else:
-                return "{}.{} {}:{}".format(self.day, self.month, self.hour, self.minute)
-        return "{}.{}.{} {}:{}".format(self.year, self.day, self.month, self.hour, self.minute)
+                return "{:02d}.{:02d} {:02d}:{:02d}".format(self.day, self.month, self.hour, self.minute)
+        return "{:02d}.{:02d}.{} {:02d}:{:02d}".format(self.year, self.day, self.month, self.hour, self.minute)
 
 
 class Duration:
@@ -133,7 +133,7 @@ class Location:
             self.score = json["score"]
         else:
             self.score = None
-        if "distance" in json:
+        if "distance" in json and json["distance"] is not None:
             self.distance = int(json["distance"])
         else:
             self.distance = None
