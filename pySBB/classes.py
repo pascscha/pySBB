@@ -1,6 +1,8 @@
 import datetime
 
 # Author: Pascal Schärli
+
+
 class Connection:
     def __init__(self, json):
         if "from" in json and json["from"] is not None:
@@ -70,6 +72,18 @@ class StationBoardEntry:
             self.to = json["to"]
         else:
             self.to = None
+        if "category" in json:
+            self.category = json["category"]
+        else:
+            self.category = None
+        if "number" in json:
+            self.number = json["number"]
+        else:
+            self.number = None
+        if "name" in json:
+            self.name = json["name"]
+        else:
+            self.name = None
 
     def __str__(self):
         return "{} -> {}".format(self.stop, self.to)
