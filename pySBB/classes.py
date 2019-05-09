@@ -32,10 +32,18 @@ class Stop:
             self.arrival = Time(json["arrival"])
         else:
             self.arrival = None
+        if "arrivalTimestamp" in json and json["arrivalTimestamp"] is not None:
+            self.arrivalTimestamp = int(json["arrivalTimestamp"])
+        else:
+            self.arrivalTimestamp = None
         if "departure" in json and json["departure"] is not None:
             self.departure = Time(json["departure"])
         else:
             self.departure = None
+        if "departureTimestamp" in json and json["departureTimestamp"] is not None:
+            self.departureTimestamp = int(json["departureTimestamp"])
+        else:
+            self.departureTimestamp = None
         if "delay" in json:
             self.delay = json["delay"]
         else:
