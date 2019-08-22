@@ -76,7 +76,7 @@ class BoundedParameter(Parameter):
     def process(self, value):
         if self.lower_bound is not None and value < self.lower_bound:
             raise ValueError("{}: Value can't be smaller than {} but is {}".format(self.name, self.lower_bound, value))
-        if self.upper_bound is not None and value < self.upper_bound:
+        if self.upper_bound is not None and value > self.upper_bound:
             raise ValueError("{}: Value can't be bigger than {} but is {}".format(self.name, self.upper_bound, value))
         return str(value)
 

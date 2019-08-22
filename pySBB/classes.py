@@ -1,37 +1,48 @@
-from datetime import timedelta, datetime
-
 # Author: Pascal Schärli
+
+from datetime import timedelta, datetime
 
 
 class SBBObject():
 
+    # Element names we want to rename
+    # (we can't use the variable name from as its a python keyword)
     blacklist = {
         "from": "start",
         "to": "end",
     }
 
-    def __init__(self, data, name=None):
+    def __init__(self, data, name):
         self._data = data
-
         self.__name__ = name
+
+        # Recursively convert dictionary into python classes
         for key, value in data.items():
 
+            # Rename key if its in blacklist
             if key in self.blacklist:
                 key = self.blacklist[key]
 
+            # By adding variables to __dict__ we can access them just like
+            # Other class variables
             self.__dict__[key] = self._get_object(key, value)
 
     def __repr__(self):
         return "<{} at 0x{:0x}>".format(self.__name__, id(self))
 
     def __str__(self):
-        if self.__name__ in ["Start", "End", "Stop"]:
+        """String representation for SBBObjects. Different representations are used depending on what kind of class it is."""
+
+        #
+        # Start,Stop points
+        #
+        if self.__name__ in ["Start", "End", "Stop", "Passlist","Departure","Arrival"]:
             out = "{}".format(self.station)
 
             info = []
             if self.arrival is not None:
                 info.append(self.arrival.strftime("%H:%M"))
-            if self.departure is not None:
+            elif self.departure is not None:
                 info.append(self.departure.strftime("%H:%M"))
             if self.platform is not None:
                 info.append("Plat. {}".format(self.platform))
@@ -40,15 +51,17 @@ class SBBObject():
             if len(info) > 0:
                 out = out + " (" + ", ".join(info) + ")"
             return out
-        elif self.__name__ == "Station":
-            return self.name
-        elif self.__name__ == "Location":
-            return self.name
-        elif self.__name__ == "Passlist":
-            return str(self.station)
+        elif self.__name__ in ["Station", "Location"]:
+            if self.name is None:
+                return ""
+            else:
+                return self.name
+        elif self.__name__ == "Section":
+            return "{} -> {}".format(self.departure, self.arrival)
+            departure.station
         elif self.__name__ == "Journey":
             return "{}: {}".format(self.name, "->".join([str(p) for p in self.passList]))
-        elif self.__name__ == "Coordinates":
+        elif self.__name__ == "Coordinate":
             return "({}, {})".format(self.x, self.y)
         else:
             out = []
@@ -59,7 +72,7 @@ class SBBObject():
 
     def _get_object(self, key, value):
         if type(value) == dict:
-            return SBBObject(value, name=key.title())
+            return SBBObject(value, key.title())
         elif type(value) == list:
             out = []
             for val in value:
@@ -67,6 +80,11 @@ class SBBObject():
                     key = key[:-1]
                 out.append(self._get_object(key, val))
             return out
+        elif self.isnumber(value):
+            if int(value) == float(value):
+                return int(value)
+            else:
+                return float(value)
         elif key in ["departure", "arrival"] and value is not None:
             return datetime.strptime(value[:-5], "%Y-%m-%dT%H:%M:%S")
         elif key == "duration" and value is not None:
@@ -75,11 +93,6 @@ class SBBObject():
             minutes = int(value[6:8])
             seconds = int(value[9:10])
             return timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
-        elif self.isnumber(value):
-            if int(value) == float(value):
-                return int(value)
-            else:
-                return float(value)
         else:
             return value
 
@@ -120,7 +133,7 @@ class SBBObject():
 
 class Connection(SBBObject):
     def __init__(self, data):
-        super().__init__(data, name="Connection")
+        super().__init__(data, "Connection")
 
     def __str__(self):
         return "{} -> {} | {}".format(self.start, self.end, self._timedelta_string(self.duration))
@@ -128,12 +141,12 @@ class Connection(SBBObject):
 
 class StationBoardEntry(SBBObject):
     def __init__(self, data):
-        super().__init__(data, name="StationBoardEntry")
+        super().__init__(data, "StationBoardEntry")
 
     def __str__(self):
-        return "{} {} -> {} ".format(self.stop.departure.strftime("%H:%M"), self.stop, self.end)
+        return "{} -> {} ".format(self.stop, self.end)
 
 
 class Location(SBBObject):
     def __init__(self, data):
-        super().__init__(data, name="Location")
+        super().__init__(data, "Location")
