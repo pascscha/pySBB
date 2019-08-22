@@ -29,12 +29,15 @@ class Query:
                 parser = self.kwargs[kw]
                 params[parser.name] = parser.parse(value)
 
-        response = requests.get(self.url, params=params)
+        response = requests.get(self.url, params=params).json()
 
-        data = response.json()[self.return_key]
+        if "errors" in response:
+            raise ValueError("The API responded with the following error: " + str(response["errors"]))
 
         with open("out.json", "w+") as f:
-            json.dump(data, f, indent=1)
+            json.dump(response, f, indent=1)
+
+        data = response[self.return_key]
 
         out = []
 

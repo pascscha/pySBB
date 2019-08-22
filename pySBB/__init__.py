@@ -25,7 +25,7 @@ get_connections = Query(base_url + "connections", Connection, "connections",
                         accessibility=ListParameter("accessibility", Parameter("accessibility", valid_values=["independent_boarding", "assisted_boarding", "advanced_notice"]))
                         )
 
-get_locations = Query(base_url + "locations", Location, "locations",
+get_locations = Query(base_url + "locations", Location, "stations",
                       query=Parameter("query", valid_types=[str]),
                       x=Parameter("x", valid_types=[float]),
                       y=Parameter("y", valid_types=[float]),
