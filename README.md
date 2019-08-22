@@ -142,11 +142,11 @@ Brugg AG (11:41, Plat. 2) -> Basel SBB (12:24, Plat. 2) | 43min
 ```
 
 ## Get all follwing station for first stationboard entry
-The following code prints all stations of the first connection on the stationboard:
+The following code prints all stations of the first ship departing from "Luzern Bahnhofquai" at a given date:
 ```
 import pySBB
 
-entry = pySBB.get_stationboard("Luzern", limit=1)[0]
+entry = pySBB.get_stationboard("Luzern Bahnhofquai", transportations="ship", datetime="2019-10-10 12:00", limit=1)[0]
 
 print(entry)
 for passList in entry.passList:
@@ -154,19 +154,9 @@ for passList in entry.passList:
 ```
 
 ```
-Luzern (11:21, Plat. 8) -> Baar
-   Ebikon (11:31)
-   Buchrain (11:32)
-   Root D4 (11:34)
-   Gisikon-Root (11:37)
-   Rotkreuz (11:42)
-   Hünenberg Zythus (11:56)
-   Cham (11:58)
-   Cham Alpenblick (12:00)
-   Zug Chollermüli (12:02)
-   Zug Schutzengel (12:04)
-   Zug (12:06)
-   Baar Lindenpark (12:07)
-   Baar Neufeld (12:08)
-   Baar (12:12)
+Luzern Bahnhofquai (12:00, Plat. 1) -> Vitznau
+   Verkehrshaus-Lido (12:10)
+   Hertenstein (See) (12:30)
+   Weggis (12:40)
+   Vitznau (12:54)
 ```
