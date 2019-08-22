@@ -95,6 +95,15 @@ The objects are the same as the ones used by the API, which are documented [here
 
 The only difference is that any strings containing times or durations have been converted to [datetime](https://docs.python.org/3/library/datetime.html) objects.
 
+Sometimes it can also help to look at the unprocessed data returned by the API, in order to figure out how the classes are structured. The unprocessed data is stored for every Object in the `_data` parameter and can be accessed like this (I also used the [json](https://docs.python.org/3.5/library/json.html) module to format the dictionary nicely with indentations)
+```
+import pySBB
+import json
+entry = pySBB.get_stationboard("Lugano", limit=1)[0]
+
+print(json.dumps(entry._data, indent=1))
+```
+
 # Further Examples
 ## Get all transfer stations
 The following code lets you see all transfer stations for a given connection
