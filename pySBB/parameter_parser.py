@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 
 class Parameter:
@@ -6,9 +6,10 @@ class Parameter:
         self.name = name
         self.default = default
         self.valid_types = valid_types
+        self.valid_values = valid_values
 
     def parse(self, value):
-        if self.value is None:
+        if value is None:
             if self.optional:
                 return None
             else:
@@ -27,12 +28,15 @@ class Parameter:
                 return processed_value
 
     def process(self, value):
-        raise NotImplementedError("Please implement this method.")
+        return str(value)
 
 
 class ListParameter(Parameter):
-    def __init__(self, *args, element_parameter, min_length=None, max_length=None, **kwargs):
-        super().__init__(*args, valid_types=[list] + element_parameter.valid_types, **kwargs)
+    def __init__(self, name, element_parameter, *args, min_length=None, max_length=None, **kwargs):
+        if element_parameter.valid_types is None:
+            super().__init__(name, *args, **kwargs)
+        else:
+            super().__init__(name, *args, valid_types=[list] + element_parameter.valid_types, **kwargs)
         self.element_parameter = element_parameter
         self.min_length = min_length
         self.max_length = max_length

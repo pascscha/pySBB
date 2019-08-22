@@ -1,73 +1,121 @@
-import datetime
+from datetime import timedelta, datetime
 
 # Author: Pascal Schärli
 
 
-class Connection:
-    def __init__(self, json):
-        if "from" in json and json["from"] is not None:
-            self.start = Stop(json["from"])  # We can't use from as a name since its a taken python keyword :(
-        else:
-            self.start = None
-        if "to" in json and json["to"] is not None:
-            self.end = Stop(json["to"])
-        else:
-            self.end = None
-        if "duration" in json and json["duration"] is not None:
-            self.duration = Duration(json["duration"])
-        else:
-            self.duration = None
+class SBBObject():
+
+    blacklist = {
+        "from": "start",
+        "to": "end",
+    }
+
+    def __init__(self, data, name=None):
+        self._data = data
+
+        self.__name__ = name
+
+        for key, value in data.items():
+
+            if key in self.blacklist:
+                key = self.blacklist[key]
+
+            if type(value) == dict:
+                self.__dict__[key] = SBBObject(value, name=key.title())
+            elif key in ["departure", "arrival"] and value is not None:
+                self.__dict__[key] = datetime.strptime(value[:-5], "%Y-%m-%dT%H:%M:%S")
+            elif key == "duration" and value is not None:
+                days = int(value[0:2])
+                hours = int(value[3:5])
+                minutes = int(value[6:8])
+                seconds = int(value[9:10])
+                self.__dict__[key] = timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+
+            elif self.isint(value):
+                self.__dict__[key] = int(value)
+
+            elif self.isfloat(value):
+                self.__dict__[key] = float(value)
+            else:
+                self.__dict__[key] = value
+
+    def __repr__(self):
+        return "<{} at 0x{:0x}>".format(self.__name__, id(self))
 
     def __str__(self):
-        return "{} -> {} | {}".format(self.start, self.end, self.duration)
+        if self.__name__ in ["Start", "End"]:
+            out = "{}".format(self.station)
+
+            info = []
+            if self.arrival is not None:
+                info.append(self.arrival.strftime("%H:%M"))
+            if self.departure is not None:
+                info.append(self.departure.strftime("%H:%M"))
+            if self.platform is not None:
+                info.append("Plat. {}".format(self.platform))
+            if self.delay is not None and self.delay != 0:
+                info.append("Delay {} min".format(self.delay))
+            if len(info) > 0:
+                out = out + " (" + ", ".join(info) + ")"
+            return out
+        elif self.__name__ == "Station":
+            return self.name
+        else:
+            out = []
+            for key, value in self.__dict__.items():
+                if type(value) == str and not key.startswith("__"):
+                    out.append(key + "=" + value)
+            return "{}: {}".format(self.__name__, ", ".join(out))
+
+    @staticmethod
+    def _timedelta_string(timedelta):
+        out = []
+
+        if timedelta.days < 0:
+            timedelta = -timedelta
+            out.append("-")
+
+        days = timedelta.days
+        hours, rem = divmod(timedelta.seconds, 3600)
+        minutes, seconds = divmod(rem, 60)
+
+        added = False
+        if days != 0:
+            out.append("{}d".format(days))
+            added = True
+        if hours != 0 or added:
+            out.append("{}h".format(hours))
+            added = True
+        if minutes != 0 or added:
+            out.append("{}min".format(minutes))
+            added = True
+        if not added:
+            out.append("{}s".format(seconds))
+        return " ".join(out)
+
+    @staticmethod
+    def isfloat(value):
+        try:
+            float(value)
+            return True
+        except:
+            return False
+
+    @staticmethod
+    def isint(value):
+        try:
+            int(value)
+            return True
+        except:
+            return False
 
 
-class Stop:
-    def __init__(self, json):
-        if "station" in json and json["station"] is not None:
-            self.station = Location(json["station"])
-        else:
-            self.station = None
-        if "arrival" in json and json["arrival"] is not None:
-            self.arrival = Time(json["arrival"])
-        else:
-            self.arrival = None
-        if "arrivalTimestamp" in json and json["arrivalTimestamp"] is not None:
-            self.arrivalTimestamp = int(json["arrivalTimestamp"])
-        else:
-            self.arrivalTimestamp = None
-        if "departure" in json and json["departure"] is not None:
-            self.departure = Time(json["departure"])
-        else:
-            self.departure = None
-        if "departureTimestamp" in json and json["departureTimestamp"] is not None:
-            self.departureTimestamp = int(json["departureTimestamp"])
-        else:
-            self.departureTimestamp = None
-        if "delay" in json:
-            self.delay = json["delay"]
-        else:
-            self.delay = None
-        if "platform" in json:
-            self.platform = json["platform"]
-        else:
-            self.platform = None
+class Connection(SBBObject):
+    def __init__(self, data):
+        super().__init__(data, name="Connection")
 
     def __str__(self):
-        out = "{}".format(self.station)
-
-        info = []
-        if self.arrival is not None:
-            info.append("{}".format(self.arrival))
-        if self.departure is not None:
-            info.append("{}".format(self.departure))
-        if self.platform is not None:
-            info.append("Plat. {}".format(self.platform))
-        if self.delay is not None and self.delay != 0:
-            info.append("Delay {} min".format(self.delay))
-        if len(info) > 0:
-            out = out + " (" + ", ".join(info) + ")"
-        return out
+        return "{} -> {} | {}".format(self.start, self.end, self._timedelta_string(self.duration))
 
 
 class StationBoardEntry:

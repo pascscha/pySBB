@@ -2,18 +2,16 @@
 
 # Author: Pascal Schärli
 import requests
-import datetime
-
-from .utils import *
-from .classes import *
-from .parameter_parser import *
+import json
 
 
 class Query:
-    def __init__(self, url, return_class, *args, **kwargs):
+    def __init__(self, url, return_class, return_key, *args, **kwargs):
         self.url = url
         self.args = args
         self.kwargs = kwargs
+        self.return_class = return_class
+        self.return_key = return_key
 
     def __call__(self, *args, **kwargs):
         params = {}
@@ -33,40 +31,14 @@ class Query:
 
         response = requests.get(self.url, params=params)
 
-        return return_class(response)
+        data = response.json()[self.return_key]
 
+        with open("out.json", "w+") as f:
+            json.dump(data, f, indent=1)
 
-base_url = "http://transport.opendata.ch/v1/"
+        out = []
 
-get_connections = Query(base_url + "connections", Connections,
-                        Parameter("from", optional=False, valid_types=[str]),
-                        Parameter("to", optional=False, valid_types=[str]),
-                        via=ListParameter("via", Parameter("via", valid_types=[str])),
-                        date=DateParameter("date", in_format="%Y-%m-%d", out_format="%Y-%m-%d"),
-                        time=DateParameter("time", in_format="%H:%M", out_format="%H:%M"),
-                        isArrivalTime=BoolParameter("isArrivalTime"),
-                        transportations=ListParameter("transportations", Parameter("transportation", valid_values=["train", "tram", "ship", "bus", "cableway"])),
-                        limit=BoundedParameter("limit", lower_bound=1, upper_bound=15, valid_types=[int]),
-                        page=BoundedParameter("page", lower_bound=0, upper_bound=3, valid_types=[int]),
-                        direct=BoolParameter("direct"),
-                        sleeper=BoolParameter("sleeper"),
-                        cauchette=BoolParameter("cauchette"),
-                        bike=BoolParameter("bike"),
-                        accessibility=ListParameter("accessibility", Parameter("accessibility", valid_values=["independent_boarding", "assisted_boarding", "advanced_notice"]))
-                        )
+        for elem in data:
+            out.append(self.return_class(elem))
 
-get_locations = Query(base_url + "locations", Locations,
-                      query=Parameter("query", valid_types=[str]),
-                      x=Parameter("x", valid_types=[float]),
-                      y=Parameter("y", valid_types=[float]),
-                      type=Parameter("type", valid_values=["all", "station", "poi", "address"])
-                      )
-
-get_stationboard = Query(base_url + "stationboard", StationBoards,
-                         Parameter("station", valid_types=[str]),
-                         id=Parameter("id", valid_types=[int]),
-                         limit=BoundedParameter("limit", lower_bound=0),
-                         transportations=ListParameter("transportations", Parameter("transportation", valid_values=["train", "tram", "ship", "bus", "cableway"])),
-                         datetime=DateParameter("datetime", in_format="%Y-%m-%d %H:%M", out_format="%Y-%m-%d %H:%M"),
-                         type=Parameter("type", valid_values=["departure", "arrival"])
-                         )
+        return out
