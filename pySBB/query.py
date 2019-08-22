@@ -34,9 +34,6 @@ class Query:
         if "errors" in response:
             raise ValueError("The API responded with the following error: " + str(response["errors"]))
 
-        with open("out.json", "w+") as f:
-            json.dump(response, f, indent=1)
-
         data = response[self.return_key]
 
         out = []
