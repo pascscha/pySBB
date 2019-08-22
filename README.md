@@ -49,7 +49,7 @@ for l in locations:
 ```
 Example Output:
 ```
-Luzern, Lidostr. 5 
+Luzern, Lidostr. 5
 Verkehrshaus der Schweiz, Luzern, Lidostr. 5
 Restaurant Piccard im Verkehrshaus der Schweiz, Luzern, Lidostr. 5
 ...
@@ -84,96 +84,88 @@ Lugano (19:25, Plat. 4) -> Bellinzona
 ```
 Further parameters (see [stationboard](https://transport.opendata.ch/docs.html#stationboard)) for more info:
 - id: The id of the station whose stationboard should be returned. Overwrites to the station parameter.
-- limit: Number of departing connections to return. 
+- limit: Number of departing connections to return.
 - transportations: Transportation means; one or more of train, tram, ship, bus, cableway
 - date: Date of departing connections, in the format YYYY-MM-DD
 - time: Time of departing connections, in the format hh:mm
 - type: departure (default) or arrival
 
 # Objects
-This is a descripition of all objects used by this api.
+The objects are the same as the ones used by the API, which are documented [here](https://transport.opendata.ch/docs.html#api-objects)
 
-## Connection
-A connection represents a possible journey between two locations.
-### Parameters:
-| Name     | Type     | Description                       |
-| ---------|:--------:|:--------------------------------- |
-| start    | Stop     | The starting point of the journey |
-| end      | Stop     | The end point of the journey      |
-| duration | Duration | How long the journey takes        |
-### Functions:
-| Name     | Return Type  | Description                                        |
-| ---------|:------------:|:---------------------------------------------------|
-| __str__  | str          | Returns a string representation of the Connection. |
+The only difference is that any strings containing times or durations have been converted to [datetime](https://docs.python.org/3/library/datetime.html) objects.
 
-## Stop
-A stop represents an arrival or a departure point (in time and space) of a connection.
-### Parameters:
-| Name      | Type     | Description                                                         |
-| ----------|:--------:|:--------------------------------------------------------------------|
-| station   | Location | A location object showing this line's stop at the requested station |
-| arrival   | Time     | The arrival time to the checkpoint                                  |
-| departure | Time     | The departure time from the checkpoint                              |
-| delay     | int      | The delay of this connection                                        |
-| platform  | str      | The arrival/departure platform                                      |
-### Functions:
-| Name     | Return Type  | Description                                  |
-| ---------|:------------:|:---------------------------------------------|
-| __str__  | str          | Returns a string representation of the Stop. |
+Sometimes it can also help to look at the unprocessed data returned by the API, in order to figure out how the classes are structured. The unprocessed data is stored for every Object in the `_data` parameter and can be accessed like this (I also used the [json](https://docs.python.org/3.5/library/json.html) module to format the dictionary nicely with indentations)
+```
+import pySBB
+import json
+entry = pySBB.get_stationboard("Lugano", limit=1)[0]
 
-## Location
-Can be any location, station address or point of iterest.
-### Parameters:
-| Name        | Type        | Description                                                               |
-| ------------|:-----------:|:--------------------------------------------------------------------------|
-| id          | int         | The id of the location                                                    |
-| name        | str         | The name of the location                                                  |
-| score       | str         | The accuracy of the result                                                |
-| distance    | int         | If search has been with coordinates, distance to original point in meters |
-| coordinates | Coordinates | The location coordinates                                                  |
-### Functions:
-| Name     | Return Type  | Description                                      |
-| ---------|:------------:|:-------------------------------------------------|
-| __str__  | str          | Returns a string representation of the Location. |
+print(json.dumps(entry._data, indent=1))
+```
 
-## Duration
-A duration object holds the duration it takes to complete a journey
-### Parameters:
-| Name        | Type        | Description            |
-| ------------|:-----------:|:-----------------------|
-| days        | int         | The number of days    |
-| hours       | int         | The number of hours   |
-| minutes     | int         | The number of minutes |
-| seconds     | int         | The number of seconds |
-### Functions:
-| Name     | Return Type  | Description                                      |
-| ---------|:------------:|:-------------------------------------------------|
-| __str__  | str          | Returns a string representation of the Duration. |
+# Further Examples
+## Get all transfer stations
+The following code lets you see all transfer stations for a given connection
+```
+import pySBB
 
-## Time
-A time object holds the time for some event such as arrival at a checkpoint. Notice that there is no 
-### Parameters:
-| Name        | Type        | Description              |
-| ------------|:-----------:|:-------------------------|
-| year        | int         | The year of this event   |
-| month       | int         | The month of this event  |
-| day         | int         | The day of this event    |
-| hour        | int         | The hour of this event   |
-| minute      | int         | The minute of this event |
-### Functions:
-| Name     | Return Type  | Description                                  |
-| ---------|:------------:|:---------------------------------------------|
-| __str__  | str          | Returns a string representation of the Time. |
+connection = pySBB.get_connections("Mauraz", "Amriswil", limit=1)[0]
 
+print(connection)
+for section in connection.sections:
+    print("   {}".format(section))
+```
+```
+Mauraz (11:48) -> Amriswil (16:05, Plat. 33) | 4h 17min
+   Mauraz (11:48) -> Pampigny-Sévery (12:04)
+   Pampigny-Sévery (12:04) -> L'Isle (12:13)
+   L'Isle (12:13) -> L'Isle, gare (12:15)
+   L'Isle, gare (12:15) -> Cossonay-Penthalaz, gare (12:35)
+   Cossonay-Penthalaz, gare (12:35) -> Cossonay-Penthalaz (12:37)
+   Cossonay-Penthalaz (12:37, Plat. 1) -> Yverdon-les-Bains (13:00, Plat. 1)
+   Yverdon-les-Bains (13:00, Plat. 1) -> Zürich HB (14:56, Plat. 13)
+   Zürich HB (14:56, Plat. 33) -> Amriswil (16:05, Plat. 2)
+```
 
-## Coordinates
-Coordinates describe the location of any geographical point used by this package.
-### Parameters:
-| Name        | Type        | Description    |
-| ------------|:-----------:|:---------------|
-| x           | int         | The latitude   |
-| y           | int         | The longitude  |
-### Functions:
-| Name     | Return Type  | Description                                         |
-| ---------|:------------:|:----------------------------------------------------|
-| __str__  | str          | Returns a string representation of the Coordinates. |
+## Get passed stations with coordinates
+The following code prints all station names that are passed, together with its coordinates.
+```
+import pySBB
+
+connection = pySBB.get_connections("Brugg", "Basel", limit=1)[0]
+
+print(connection)
+for section in connection.sections:
+    for passList in section.journey.passList:
+        station = passList.station
+        print("   {} {}".format(station.name, station.coordinate))
+```
+
+```
+Brugg AG (11:41, Plat. 2) -> Basel SBB (12:24, Plat. 2) | 43min
+   Brugg AG (47.48085, 8.208829)
+   Frick (47.507341, 8.01309)
+   Rheinfelden (47.551208, 7.792162)
+   Basel SBB (47.547403, 7.589577)
+```
+
+## Get all follwing station for first stationboard entry
+The following code prints all stations of the first ship departing from "Luzern Bahnhofquai" at a given date:
+```
+import pySBB
+
+entry = pySBB.get_stationboard("Luzern Bahnhofquai", transportations="ship", datetime="2019-10-10 12:00", limit=1)[0]
+
+print(entry)
+for passList in entry.passList:
+    print("   {}".format(passList))
+```
+
+```
+Luzern Bahnhofquai (12:00, Plat. 1) -> Vitznau
+   Verkehrshaus-Lido (12:10)
+   Hertenstein (See) (12:30)
+   Weggis (12:40)
+   Vitznau (12:54)
+```
